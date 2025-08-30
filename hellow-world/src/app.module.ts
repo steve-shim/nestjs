@@ -3,19 +3,51 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MovieModule } from './movie/movie.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as Joi from "joi";
+import { Movie } from './movie/entity/movie.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5555,
-      username: 'postgres',
-      password: '1234',
-      database: 'postgres',
-      entities: [],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      // Joi로 환경변수 검증
+      validationSchema:Joi.object({
+        ENV: Joi.string().valid('dev', 'prod').required(),
+        DB_TYPE: Joi.string().valid('postgres').required(),
+        DB_HOST: Joi.string().required(),
+        DB_PORT: Joi.number().required(),
+        DB_USERNAME: Joi.string().required(),
+        DB_PASSWORD: Joi.string().required(),
+        DB_DATABASE: Joi.string().required()
+      })
     }),
+    // 검증된 환경변수를 비동기로 받아오기
+    TypeOrmModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        type: configService.get<string>('DB_TYPE') as "postgres",
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_DATABASE'),
+        entities: [
+          Movie
+        ],
+        synchronize: true,
+      }),
+      inject: [ConfigService]
+    }),
+    // TypeOrmModule.forRoot({
+    //   type: process.env.DB_TYPE as "postgres",
+    //   host: process.env.DB_HOST,
+    //   port: parseInt(process.env.DB_PORT),
+    //   username: process.env.DB_USERNAME,
+    //   password: process.env.DB_PASSWORD,
+    //   database: process.env.DB_DATABASE,
+    //   entities: [],
+    //   synchronize: true,
+    // }),
     MovieModule,
   ],
   // controllers: [AppController],

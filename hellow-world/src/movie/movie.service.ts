@@ -2,13 +2,18 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Movie } from './entity/movie.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class MovieService {
   private movies: Movie[] = [];
   private idCounter = 3;
 
-  constructor() {
+  constructor(
+    @InjectRepository(Movie)
+    private readonly movieRepository: Repository<Movie>
+  ) {
     const movie1 = new Movie();
 
     movie1.id = 1;
@@ -62,6 +67,9 @@ export class MovieService {
     const movie: Movie = {
       id: this.idCounter++,
       ...CreateMovieDto,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      version: 0
     };
 
     this.movies.push(movie);
@@ -80,7 +88,7 @@ export class MovieService {
 
     return movie;
   }
-
+ 
   deleteMovie(id: number) {
     const movieIndex = this.movies.findIndex((m) => m.id === +id);
 
