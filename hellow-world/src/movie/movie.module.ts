@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Movie } from './entity/movie.entity';
 
 @Module({
+  // entity에 정의된 테이블을 import 해옴
   imports: [
     TypeOrmModule.forFeature([
       Movie,
