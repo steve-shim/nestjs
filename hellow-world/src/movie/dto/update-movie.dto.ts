@@ -4,7 +4,9 @@ import {
   Equals,
   IsDefined,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
+  IsString,
   registerDecorator,
   Validate,
   ValidationArguments,
@@ -40,21 +42,22 @@ function IsPasswordValid(validationOptions?: ValidationOptions) {
 
 export class UpdateMovieDto {
   @IsNotEmpty()
+  @IsString()
   @IsOptional()
   title?: string;
 
   @IsNotEmpty()
+  @IsString()
   @IsOptional()
   genre?: string;
 
-  //   @IsDefined()
-  //   @IsOptional()
-  //   @Equals('shim')
-  //   @Validate(PasswordValidator, {
-  //     message: '다른 에러',
-  //   })
-  // @IsPasswordValid({
-  //   message: 'aaa',
-  // })
-  // test: string;
+  @IsNotEmpty()
+  @IsString()
+  @IsOptional()
+  detail?: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @IsOptional()
+  directorId?: number;
 }
