@@ -1,7 +1,9 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateMovieDto } from './create-movie.dto';
 import {
+  ArrayNotEmpty,
   Equals,
+  IsArray,
   IsDefined,
   IsNotEmpty,
   IsNumber,
@@ -46,10 +48,17 @@ export class UpdateMovieDto {
   @IsOptional()
   title?: string;
 
-  @IsNotEmpty()
-  @IsString()
+  // @IsNotEmpty()
+  // @IsString()
+  // @IsOptional()
+  // genre?: string;
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsNumber({},{
+    each: true
+  })
   @IsOptional()
-  genre?: string;
+  genreIds?: number[]
 
   @IsNotEmpty()
   @IsString()
