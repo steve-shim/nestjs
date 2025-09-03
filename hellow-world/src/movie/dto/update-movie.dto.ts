@@ -42,31 +42,5 @@ function IsPasswordValid(validationOptions?: ValidationOptions) {
   };
 }
 
-export class UpdateMovieDto {
-  @IsNotEmpty()
-  @IsString()
-  @IsOptional()
-  title?: string;
-
-  // @IsNotEmpty()
-  // @IsString()
-  // @IsOptional()
-  // genre?: string;
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsNumber({},{
-    each: true
-  })
-  @IsOptional()
-  genreIds?: number[]
-
-  @IsNotEmpty()
-  @IsString()
-  @IsOptional()
-  detail?: string;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @IsOptional()
-  directorId?: number;
-}
+// PartialType -> CreateMovieDto에 정의된 값들에 @IsOptional가 추가됨
+export class UpdateMovieDto extends PartialType(CreateMovieDto){}
