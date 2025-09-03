@@ -9,10 +9,14 @@ import {
   Query,
   UseInterceptors,
   ClassSerializerInterceptor,
+  ParseIntPipe,
+  BadRequestException,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
+import { MovieTitleValidationPipe } from './pipe/movie-title-validation.pipe';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // ClassTransformer를 MovieController에 적용하겠다
@@ -20,7 +24,7 @@ export class MovieController {
   constructor(private readonly movieService: MovieService) {}
 
   @Get()
-  getMovies(@Query('title') title?: string) {
+  getMovies(@Query('title', MovieTitleValidationPipe) title?: string) {
     // if (!title) {
     //   return this.movies;
     // }
@@ -30,9 +34,13 @@ export class MovieController {
   }
 
   @Get(':id')
-  getMovie(@Param('id') id: string) {
+  getMovie(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('test', new DefaultValuePipe(10)) test: number
+  ) {
+    // console.log(typeof id) -> ParseIntPipe을 적용했기 때문에 number 변환되어 들어옴
     // +id -> string을 number로 바꿔서 인자로 넘김
-    return this.movieService.findOne(+id);
+    return this.movieService.findOne(id);
   }
 
   @Post()
@@ -41,12 +49,12 @@ export class MovieController {
   }
 
   @Patch(':id')
-  patchMovie(@Param('id') id: string, @Body() body: UpdateMovieDto) {
+  patchMovie(@Param('id', ParseIntPipe) id: string, @Body() body: UpdateMovieDto) {
     return this.movieService.update(+id, body);
   }
 
   @Delete(':id')
-  deleteMovie(@Param('id') id: string) {
+  deleteMovie(@Param('id', ParseIntPipe) id: string) {
     return this.movieService.remove(+id);
   }
 }
