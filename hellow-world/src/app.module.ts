@@ -11,6 +11,9 @@ import { DirectorModule } from './director/director.module';
 import { Director } from './director/entity/director.entity';
 import { GenreModule } from './genre/genre.module';
 import { Genre } from './genre/entities/genre.entity';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
+import { User } from './user/entities/user.entity';
 
 @Module({
   imports: [
@@ -24,7 +27,8 @@ import { Genre } from './genre/entities/genre.entity';
         DB_PORT: Joi.number().required(),
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
-        DB_DATABASE: Joi.string().required()
+        DB_DATABASE: Joi.string().required(),
+        HASH_ROUNDS: Joi.number().required()
       })
     }),
     // 검증된 환경변수를 비동기로 받아오기
@@ -40,7 +44,8 @@ import { Genre } from './genre/entities/genre.entity';
           Movie,
           MovieDetail,
           Director,
-          Genre
+          Genre,
+          User
         ],
         synchronize: true,
       }),
@@ -59,6 +64,8 @@ import { Genre } from './genre/entities/genre.entity';
     MovieModule,
     DirectorModule,
     GenreModule,
+    AuthModule,
+    UserModule,
   ],
   // controllers: [AppController],
   // providers: [AppService],
