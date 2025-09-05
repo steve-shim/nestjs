@@ -20,6 +20,7 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { MovieTitleValidationPipe } from './pipe/movie-title-validation.pipe';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { Public } from 'src/auth/decorator/public.decorator';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // ClassTransformer를 MovieController에 적용하겠다
@@ -27,6 +28,7 @@ export class MovieController {
   constructor(private readonly movieService: MovieService) {}
 
   @Get()
+  @Public()
   getMovies(
     @Request() req: any,
     @Query('title', MovieTitleValidationPipe) title?: string
