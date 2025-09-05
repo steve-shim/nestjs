@@ -12,12 +12,14 @@ import {
   ParseIntPipe,
   BadRequestException,
   DefaultValuePipe,
-  Request
+  Request,
+  UseGuards
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { MovieTitleValidationPipe } from './pipe/movie-title-validation.pipe';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // ClassTransformer를 MovieController에 적용하겠다
@@ -49,6 +51,7 @@ export class MovieController {
   }
 
   @Post()
+  @UseGuards(AuthGuard) // access 토큰이 헤더에 존재하지 않으면 Guards에서 403 Forbidden resource 발생시킴 
   postMovie(@Body() body: CreateMovieDto) {
     return this.movieService.create(body);
   }
