@@ -23,6 +23,7 @@ import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { Public } from 'src/auth/decorator/public.decorator';
 import { RBAC } from 'src/auth/decorator/rabc.decorator';
 import { Role } from 'src/user/entities/user.entity';
+import { GetMoviesDto } from './dto/get-movies.dto';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // ClassTransformer를 MovieController에 적용하겠다
@@ -33,7 +34,7 @@ export class MovieController {
   @Public()
   getMovies(
     @Request() req: any,
-    @Query('title', MovieTitleValidationPipe) title?: string
+    @Query() dto: GetMoviesDto,
   ) {
     console.log(req.user);
     // if (!title) {
@@ -41,7 +42,7 @@ export class MovieController {
     // }
     // //return this.movies.filter((m) => m.title === title);
     // return this.movies.filter((m) => m.title.startsWith(title));
-    return this.movieService.findAll(title);
+    return this.movieService.findAll(dto);
   }
 
   @Get(':id')

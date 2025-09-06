@@ -6,6 +6,7 @@ import { Movie } from './entity/movie.entity';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entities/genre.entity';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
   // entity에 정의된 테이블을 import 해옴
@@ -15,7 +16,8 @@ import { Genre } from 'src/genre/entities/genre.entity';
       MovieDetail,
       Director,
       Genre
-    ])
+    ]),
+    CommonModule // CommonModule에서 CommonService를 export하고 있기 때문에 
   ],
   controllers: [MovieController],
   providers: [MovieService],

@@ -8,6 +8,9 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true, // 정의하지 않은 값은 전달하지 않게 막을 수 있음
       forbidNonWhitelisted: true, // 정의하지 않은 값은 전달되면 아예 에러 발생
+      transformOptions: {
+        enableImplicitConversion: true,
+      }
     }),
   );
   await app.listen(process.env.PORT ?? 3000);
