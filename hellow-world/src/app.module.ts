@@ -18,6 +18,7 @@ import { envVariableKeys } from './common/const/env.const';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
+import { RBACGuard } from './auth/guard/rbac.guard';
 
 @Module({
   imports: [
@@ -78,8 +79,14 @@ import { AuthGuard } from './auth/guard/auth.guard';
     {
       // EndPoint 별로 @UseGuard를 안달고 프로젝트 전체에 AuthGuard 적용
       // Bearer 토큰이 함께 담겨져 요청이 와야 프라이빗 리소스 접근 가능
+      // 토근이 있는지 먼저 확인 후
       provide: APP_GUARD,
       useClass: AuthGuard
+    },
+    {
+      // 권한이 맞는지 체크
+      provide: APP_GUARD,
+      useClass: RBACGuard
     }
   ],
 })

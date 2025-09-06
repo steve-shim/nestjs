@@ -21,6 +21,8 @@ import { UpdateMovieDto } from './dto/update-movie.dto';
 import { MovieTitleValidationPipe } from './pipe/movie-title-validation.pipe';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { Public } from 'src/auth/decorator/public.decorator';
+import { RBAC } from 'src/auth/decorator/rabc.decorator';
+import { Role } from 'src/user/entities/user.entity';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // ClassTransformer를 MovieController에 적용하겠다
@@ -43,6 +45,7 @@ export class MovieController {
   }
 
   @Get(':id')
+  @Public()
   getMovie(
     @Param('id', ParseIntPipe) id: number,
     @Query('test', new DefaultValuePipe(10)) test: number
@@ -53,17 +56,20 @@ export class MovieController {
   }
 
   @Post()
+  @RBAC(Role.admin)
   @UseGuards(AuthGuard) // access 토큰이 헤더에 존재하지 않으면 Guards에서 403 Forbidden resource 발생시킴 
   postMovie(@Body() body: CreateMovieDto) {
     return this.movieService.create(body);
   }
 
   @Patch(':id')
+  @RBAC(Role.admin)
   patchMovie(@Param('id', ParseIntPipe) id: string, @Body() body: UpdateMovieDto) {
     return this.movieService.update(+id, body);
   }
 
   @Delete(':id')
+  @RBAC(Role.admin)
   deleteMovie(@Param('id', ParseIntPipe) id: string) {
     return this.movieService.remove(+id);
   }
