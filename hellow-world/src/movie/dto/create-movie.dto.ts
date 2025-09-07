@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { LargeNumberLike } from 'crypto';
 
@@ -22,5 +23,6 @@ export class CreateMovieDto {
   @IsNumber({}, {
     each: true,
   })
+  @Type(() => Number)
   genreIds: number[];
 }
