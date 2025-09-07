@@ -3,7 +3,7 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Movie } from './entity/movie.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Like, Repository } from 'typeorm';
+import { DataSource, In, Like, QueryRunner, Repository } from 'typeorm';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entities/genre.entity';
@@ -102,96 +102,70 @@ export class MovieService {
     return movie;
   }
 
-  async create(CreateMovieDto: CreateMovieDto) {
+  async create(CreateMovieDto: CreateMovieDto, qr: QueryRunner) {
     // 트랜잭션 적용
-    const qr = this.dataSource.createQueryRunner();
-    await qr.connect();
-    await qr.startTransaction();
-    try {
-      const director = await qr.manager.findOne(Director, {
-        where: {
-          id: CreateMovieDto.directorId
-        }
-      })
 
-      if(!director) {
-        throw new NotFoundException('존재하지 않는 ID의 감독입니다.')
+    const director = await qr.manager.findOne(Director, {
+      where: {
+        id: CreateMovieDto.directorId
       }
+    })
 
-      const genres = await qr.manager.find(Genre, {
-        where: {
-          id: In(CreateMovieDto.genreIds)
-        }
-      })
-
-      if(genres.length !== CreateMovieDto.genreIds.length) {
-        throw new NotFoundException(`존재하지 않는 장르가 있습니다. 존재하는 ids -> ${genres.map((genre) => genre.id).join(',')}`)
-      }
-      
-      // this.movieDetailRepository -> qr.manager
-      // qr.manager 로 같은 트랜잭션 안에서 실행한 모든 쿼리들은 전부 롤백된다
-      const movieDetail = await qr.manager.createQueryBuilder()
-        .insert()
-        .into(MovieDetail)
-        .values({
-          detail: CreateMovieDto.detail,
-        })
-        .execute();
-
-      //throw new NotFoundException('일부러 에러 던짐')
-
-      // 생성한 값의 id 가져오기
-      const movieDetailId = movieDetail.identifiers[0].id;
-
-      const movie = await qr.manager.createQueryBuilder()
-        .insert()
-        .into(Movie)
-        .values({
-          title: CreateMovieDto.title,
-          detail: {
-            id: movieDetailId
-          },
-          director
-        })
-        .execute()
-
-      const movieId = movie.identifiers[0].id;
-
-      await qr.manager.createQueryBuilder()
-        .relation(Movie, 'genres')
-        .of(movieId)
-        .add(genres.map(genre => genre.id))
-
-      // // save를 해야 실제 객체가 생성된다
-      // const movie = await this.movieRepository.save({
-      //   title: CreateMovieDto.title,
-      //   //detail: movieDetail,
-      //   // movie.entity에서 cascade:true 옵션을 추가해주면 위에 
-      //   // 디테일레포지토리에 따로 저장안하고 한번에 저장 가능하다
-      //   detail: {
-      //     detail: CreateMovieDto.detail
-      //   },
-      //   director,
-      //   genres
-      // });
-      await qr.commitTransaction()
-
-      return await this.movieRepository.findOne({
-        where: {
-          id: movieId,
-        },
-        relations: ['detail', 'director', 'genres']
-      });
-    } catch(e) {
-      await qr.rollbackTransaction()
-
-      throw e;
-    } finally {
-      // 데이터베이스에 트랜잭션을 되돌려줘야한다.
-      await qr.release()
+    if(!director) {
+      throw new NotFoundException('존재하지 않는 ID의 감독입니다.')
     }
- 
 
+    const genres = await qr.manager.find(Genre, {
+      where: {
+        id: In(CreateMovieDto.genreIds)
+      }
+    })
+
+    if(genres.length !== CreateMovieDto.genreIds.length) {
+      throw new NotFoundException(`존재하지 않는 장르가 있습니다. 존재하는 ids -> ${genres.map((genre) => genre.id).join(',')}`)
+    }
+    
+    // this.movieDetailRepository -> qr.manager
+    // qr.manager 로 같은 트랜잭션 안에서 실행한 모든 쿼리들은 전부 롤백된다
+    const movieDetail = await qr.manager.createQueryBuilder()
+      .insert()
+      .into(MovieDetail)
+      .values({
+        detail: CreateMovieDto.detail,
+      })
+      .execute();
+
+    //throw new NotFoundException('일부러 에러 던짐')
+
+    // 생성한 값의 id 가져오기
+    const movieDetailId = movieDetail.identifiers[0].id;
+
+    const movie = await qr.manager.createQueryBuilder()
+      .insert()
+      .into(Movie)
+      .values({
+        title: CreateMovieDto.title,
+        detail: {
+          id: movieDetailId
+        },
+        director
+      })
+      .execute()
+
+    const movieId = movie.identifiers[0].id;
+
+    await qr.manager.createQueryBuilder()
+      .relation(Movie, 'genres')
+      .of(movieId)
+      .add(genres.map(genre => genre.id))
+
+    // commit을 안하면 qr(트랜잭션)에서 작업한 내용들이 실제 데이터베이스에서는 적용이 안된다.
+    return await qr.manager.findOne(Movie, {
+      where: {
+        id: movieId,
+      },
+      relations: ['detail', 'director', 'genres']
+    });
   }
 
   async update(id: number, UpdateMovieDto: UpdateMovieDto) {
