@@ -55,12 +55,15 @@ export class Movie extends BaseTable {
   @JoinColumn()
   detail: MovieDetail;
 
+  @Column()
+  movieFilePath: string;
+
   // 여러개의 영화가 하나의 감독을 가질수 있음
   // directorId가 생성된다
   @ManyToOne(
     () => Director,
     director => director.id,
-    {
+    { 
       cascade: true,
       nullable: false
     }

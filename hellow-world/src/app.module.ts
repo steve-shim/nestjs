@@ -22,6 +22,8 @@ import { RBACGuard } from './auth/guard/rbac.guard';
 import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
 import { ForbiddenExceptionFilter } from './common/filter/forbidden.filter';
 import { QueryFailedExceptionFilter } from './common/filter/query-failed.filter';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -71,6 +73,12 @@ import { QueryFailedExceptionFilter } from './common/filter/query-failed.filter'
     //   entities: [],
     //   synchronize: true,
     // }),
+    ServeStaticModule.forRoot({
+      // 다른 디렌토리는 GET요청 안받음 (public 폴더만 서빙하겠다)
+      rootPath: join(process.cwd(), 'public'),
+      // public으로 시작하는 루트를 GET 받겠다
+      serveRoot: '/public/'
+    }),
     MovieModule,
     DirectorModule,
     GenreModule,
