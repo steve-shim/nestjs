@@ -28,7 +28,7 @@ import { Role } from 'src/user/entities/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { CacheInterceptor } from 'src/common/interceptor/cache.interceptor';
 import { TransactionInterceptor } from 'src/common/interceptor/tansaction.interceptor';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // ClassTransformer를 MovieController에 적용하겠다
@@ -66,11 +66,38 @@ export class MovieController {
   @RBAC(Role.admin)
   @UseGuards(AuthGuard) // access 토큰이 헤더에 존재하지 않으면 Guards에서 403 Forbidden resource 발생시킴 
   @UseInterceptors(TransactionInterceptor)
-  @UseInterceptors(FilesInterceptor('movies'))
+  @UseInterceptors(FileFieldsInterceptor([
+    {
+      name: 'movie',
+      maxCount: 1,
+    },
+    {
+      name: 'poster',
+      maxCount: 2,
+    }
+  ], {
+    limits: {
+      fileSize: 20000000 // 20 MB
+    },
+    fileFilter(req, file, callback) {
+      console.log(file);
+      if(file.mimetype === 'video/mp4' || file.mimetype === 'image/jpeg') {
+        return callback(
+          new BadRequestException('MP4 타입만 업로드 가능합니다!'),
+          false // 에러가 나면 파일을 받지 않겠다
+        )
+      }
+
+      return callback(null, true); // 에러가 없으면 파일을 받겠다
+    }
+  }))
   postMovie(
     @Body() body: CreateMovieDto,
     @Request() req,
-    @UploadedFiles() files: Express.Multer.File[]
+    @UploadedFiles() files: {
+      movies?: Express.Multer.File[],
+      poster?: Express.Multer.File[]
+    }
   ) {
     console.log("--------------")
     console.log("files", files)
