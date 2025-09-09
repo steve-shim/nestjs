@@ -14,7 +14,8 @@ import {
   DefaultValuePipe,
   Request,
   UseGuards,
-  UploadedFile
+  UploadedFile,
+  UploadedFiles
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
@@ -27,7 +28,7 @@ import { Role } from 'src/user/entities/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { CacheInterceptor } from 'src/common/interceptor/cache.interceptor';
 import { TransactionInterceptor } from 'src/common/interceptor/tansaction.interceptor';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // ClassTransformer를 MovieController에 적용하겠다
@@ -65,13 +66,14 @@ export class MovieController {
   @RBAC(Role.admin)
   @UseGuards(AuthGuard) // access 토큰이 헤더에 존재하지 않으면 Guards에서 403 Forbidden resource 발생시킴 
   @UseInterceptors(TransactionInterceptor)
-  @UseInterceptors(FileInterceptor('movie'))
+  @UseInterceptors(FilesInterceptor('movies'))
   postMovie(
     @Body() body: CreateMovieDto,
     @Request() req,
-    @UploadedFile() file: Express.Multer.File
+    @UploadedFiles() files: Express.Multer.File[]
   ) {
-    console.log("file", file)
+    console.log("--------------")
+    console.log("files", files)
 
     return this.movieService.create(
       body,
