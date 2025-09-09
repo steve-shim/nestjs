@@ -56,6 +56,7 @@ export class Movie extends BaseTable {
   detail: MovieDetail;
 
   @Column()
+  @Transform(({value}) => `http://localhost:3000/${value}`)
   movieFilePath: string;
 
   // 여러개의 영화가 하나의 감독을 가질수 있음
