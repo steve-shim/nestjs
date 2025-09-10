@@ -31,6 +31,8 @@ import { TransactionInterceptor } from 'src/common/interceptor/tansaction.interc
 import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { MovieFilePipe } from './pipe/movie-file.pipe';
 import { UserId } from 'src/user/decorator/user-id.decorator';
+import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
+import { QueryRunner as QR } from 'typeorm';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // ClassTransformer를 MovieController에 적용하겠다
@@ -70,7 +72,8 @@ export class MovieController {
   @UseInterceptors(TransactionInterceptor)
   postMovie(
     @Body() body: CreateMovieDto,
-    @Request() req,
+    //@Request() req,
+    @QueryRunner() queryRunner: QR,
     @UserId() userId: number
   ) {
     console.log("--------------")
@@ -80,7 +83,7 @@ export class MovieController {
     return this.movieService.create(
       body,
       userId,
-      req.queryRunner
+      queryRunner
     );
   }
 
