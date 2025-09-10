@@ -30,6 +30,7 @@ import { CacheInterceptor } from 'src/common/interceptor/cache.interceptor';
 import { TransactionInterceptor } from 'src/common/interceptor/tansaction.interceptor';
 import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { MovieFilePipe } from './pipe/movie-file.pipe';
+import { UserId } from 'src/user/decorator/user-id.decorator';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // ClassTransformer를 MovieController에 적용하겠다
@@ -70,11 +71,15 @@ export class MovieController {
   postMovie(
     @Body() body: CreateMovieDto,
     @Request() req,
+    @UserId() userId: number
   ) {
     console.log("--------------")
-
+  
+    /// bearer-token.middleware에서 
+    /// req.user = payload 넣었기 때문에 req를 통해서 유저정보 받기 가능
     return this.movieService.create(
       body,
+      userId,
       req.queryRunner
     );
   }

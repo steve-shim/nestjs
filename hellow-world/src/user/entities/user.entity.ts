@@ -1,6 +1,7 @@
 import { Exclude } from "class-transformer";
 import { BaseTable } from "src/common/entity/base-table.entity";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Movie } from "src/movie/entity/movie.entity";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 export enum Role {
     admin, // 0
@@ -30,4 +31,11 @@ export class User extends BaseTable {
         default: Role.user
     })
     role: Role;
+
+    // 사용자 하나가 여러개의 영화를 만들수 있음
+    @OneToMany(
+        () => Movie,
+        (movie) => movie.creator
+    )
+    createdMovies: Movie[];
 }

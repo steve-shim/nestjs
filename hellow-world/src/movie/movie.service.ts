@@ -87,12 +87,13 @@ export class MovieService {
       .leftJoinAndSelect('movie.director', 'director')
       .leftJoinAndSelect('movie.genres', 'genres')
       .leftJoinAndSelect('movie.detail', 'detail')
+      .leftJoinAndSelect('movie.creator', 'creator')
       .where('movie.id = :id', {id})
       .getOne();
 
     // const movie = await this.movieRepository.findOne({
     //   where: {
-    //     id,
+    //     id, 
     //   },
     //   relations: ['detail', 'director', 'genres']
     // })
@@ -104,7 +105,7 @@ export class MovieService {
     return movie;
   }
 
-  async create(CreateMovieDto: CreateMovieDto, qr: QueryRunner) {
+  async create(CreateMovieDto: CreateMovieDto, userId: number, qr: QueryRunner) {
     // 트랜잭션 적용
 
     const director = await qr.manager.findOne(Director, {
@@ -145,10 +146,6 @@ export class MovieService {
     const movieFolder = join('public', 'movie');
     const tempFolder = join('public', 'temp');
 
-    await rename(
-      join(process.cwd(), tempFolder, CreateMovieDto.movieFileName),
-      join(process.cwd(), movieFolder, CreateMovieDto.movieFileName)
-    )
 
     const movie = await qr.manager.createQueryBuilder()
       .insert()
@@ -159,6 +156,10 @@ export class MovieService {
           id: movieDetailId
         },
         director,
+        creator: {
+          id: userId,
+        },
+
         movieFilePath: join(movieFolder, CreateMovieDto.movieFileName)
       })
       .execute()
@@ -169,6 +170,11 @@ export class MovieService {
       .relation(Movie, 'genres')
       .of(movieId)
       .add(genres.map(genre => genre.id))
+
+    await rename(
+      join(process.cwd(), tempFolder, CreateMovieDto.movieFileName),
+      join(process.cwd(), movieFolder, CreateMovieDto.movieFileName)
+    )
 
     // commit을 안하면 qr(트랜잭션)에서 작업한 내용들이 실제 데이터베이스에서는 적용이 안된다.
     return await qr.manager.findOne(Movie, {
