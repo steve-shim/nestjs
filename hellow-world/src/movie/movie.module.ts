@@ -11,6 +11,8 @@ import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { join } from 'path';
 import { v4 } from 'uuid';
+import { User } from 'src/user/entities/user.entity';
+import { MovieUserLike } from './entity/movie-user-like.entity';
 
 @Module({
   // entity에 정의된 테이블을 import 해옴
@@ -18,8 +20,10 @@ import { v4 } from 'uuid';
     TypeOrmModule.forFeature([
       Movie,
       MovieDetail,
+      MovieUserLike,
       Director,
-      Genre
+      Genre,
+      User
     ]),
     CommonModule, // CommonModule에서 CommonService를 export하고 있기 때문에
     // MulterModule.register({

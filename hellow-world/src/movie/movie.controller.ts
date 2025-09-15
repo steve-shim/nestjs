@@ -98,4 +98,25 @@ export class MovieController {
   deleteMovie(@Param('id', ParseIntPipe) id: string) {
     return this.movieService.remove(+id);
   }
+
+  /**
+   * [Like]  [Dislike]
+   * 
+   * 아무것도 누르지 않은 상태: 모두 버튼 꺼져있음
+   */
+  @Post(':id/like')
+  createMovieLike(
+    @Param('id', ParseIntPipe) movieId: number,
+    @UserId() userId: number,
+  ){
+    return this.movieService.toggleMovieLike(movieId, userId, true)
+  }
+
+  @Post(':id/dislike')
+  createMovieDislike(
+    @Param('id', ParseIntPipe) movieId: number,
+    @UserId() userId: number,
+  ){
+    return this.movieService.toggleMovieLike(movieId, userId, false)
+  }
 }
