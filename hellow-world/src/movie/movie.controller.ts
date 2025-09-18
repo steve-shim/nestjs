@@ -45,6 +45,7 @@ export class MovieController {
   getMovies(
     @Request() req: any,
     @Query() dto: GetMoviesDto,
+    @UserId() userId?: number,
   ) {
     console.log(req.user);
     // if (!title) {
@@ -52,7 +53,7 @@ export class MovieController {
     // }
     // //return this.movies.filter((m) => m.title === title);
     // return this.movies.filter((m) => m.title.startsWith(title));
-    return this.movieService.findAll(dto);
+    return this.movieService.findAll(dto, userId);
   }
 
   @Get(':id')

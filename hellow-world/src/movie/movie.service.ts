@@ -52,7 +52,7 @@ export class MovieService {
     // this.movies.push(movie1, movie2);
   }
 
-  async findAll(dto: GetMoviesDto) {
+  async findAll(dto: GetMoviesDto, userId?: number) {
     //const {title, take, page} = dto;
     const {title} = dto;
 
@@ -67,7 +67,35 @@ export class MovieService {
     //this.commonService.applyPagePaginationParamsToQb(qb, dto)
     const {nextCursor} = await this.commonService.applyCursorPaginationParamsToQb(qb, dto) 
 
-    const [data, count] = await qb.getManyAndCount()
+    let [data, count] = await qb.getManyAndCount()
+
+    // 로그인된 사용자일때만 자신이 누른 좋아요 정보까지 함께 전달 받는다
+    if(userId) {
+      const movieIds = data.map(movie => movie.id);
+
+      const likedMovies = movieIds.length < 1 ? [] : await this.movieUserLikeRepository.createQueryBuilder('mul')
+        .leftJoinAndSelect('mul.user', 'user')
+        .leftJoinAndSelect('mul.movie', 'movie')
+        .where('movie.id IN(:...movieIds)', {movieIds})
+        .andWhere('user.id = :userId', {userId})
+        .getMany();
+      
+      /**
+       * {
+       *  movieId: boolean
+       * } 
+       */
+      const likedMovieMap = likedMovies.reduce((acc, next) => ({
+        ...acc,
+        [next.movie.id]: next.isLike,
+      }), {})
+
+      data = data.map((x) => ({
+        ...x,
+        /// null || true || false
+        likeStatus: x.id in likedMovieMap ? likedMovieMap[x.id] : null
+      }))    
+    }
 
     return {
       data,
