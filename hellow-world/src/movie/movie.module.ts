@@ -13,6 +13,7 @@ import { join } from 'path';
 import { v4 } from 'uuid';
 import { User } from 'src/user/entities/user.entity';
 import { MovieUserLike } from './entity/movie-user-like.entity';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   // entity에 정의된 테이블을 import 해옴
@@ -26,6 +27,9 @@ import { MovieUserLike } from './entity/movie-user-like.entity';
       User
     ]),
     CommonModule, // CommonModule에서 CommonService를 export하고 있기 때문에
+    CacheModule.register({
+      ttl: 3000,
+    })
     // MulterModule.register({
     //   storage: diskStorage({
     //     destination: join(process.cwd(), 'public', 'movie'),

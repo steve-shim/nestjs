@@ -33,6 +33,7 @@ import { MovieFilePipe } from './pipe/movie-file.pipe';
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { QueryRunner } from 'src/common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
+import { CacheKey, CacheTTL, CacheInterceptor as CI } from '@nestjs/cache-manager';
 
 @Controller('movie')
 @UseInterceptors(ClassSerializerInterceptor) // ClassTransformer를 MovieController에 적용하겠다
@@ -54,6 +55,16 @@ export class MovieController {
     // //return this.movies.filter((m) => m.title === title);
     // return this.movies.filter((m) => m.title.startsWith(title));
     return this.movieService.findAll(dto, userId);
+  }
+
+  @Get('recent')
+  // 메서드 자체 응답값을 URL기반으로 캐싱할 수 있다. (movieService 실행도 안함)
+  @UseInterceptors(CI)
+  @CacheKey('getMovieRecent')
+  @CacheTTL(1000)
+  getMovieRecent() {
+    console.log("getMovieRecent 실행!")
+    return this.movieService.findRecent();
   }
 
   @Get(':id')

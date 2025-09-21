@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Movie } from './entity/movie.entity';
@@ -13,6 +13,7 @@ import { join } from 'path';
 import { rename } from 'fs/promises';
 import { User } from 'src/user/entities/user.entity';
 import { MovieUserLike } from './entity/movie-user-like.entity';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class MovieService {
@@ -36,6 +37,8 @@ export class MovieService {
     private readonly movieUserLikeRepository: Repository<MovieUserLike>,
     private readonly dataSource: DataSource,
     private readonly commonService: CommonService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache
   ) {
     // const movie1 = new Movie();
 
@@ -50,6 +53,29 @@ export class MovieService {
     // movie2.genre = 'action';
 
     // this.movies.push(movie1, movie2);
+  }
+
+  async findRecent() {
+    const cacheData = await this.cacheManager.get('MOVIE_RECENT');
+
+    if(cacheData) { 
+      console.log("캐시 가져옴!")
+      return cacheData;
+    }
+
+    // 캐시에 데이터가 없을때만 서버가 데이터베이스로 요청을 보낸다.
+    const data = this.movieRepository.find({
+      order: {
+        createdAt: 'DESC',
+      },
+      take: 2,
+    })
+
+    // 2초이내 재요청이 없는 경우 메모리에서 삭제한다. 
+    // 모듈에서 설정한 TTL을 서비스에서 설정한 TTL이 OverWrite 한다.
+    await this.cacheManager.set('MOVIE_RECENT', data, 2000);
+
+    return data
   }
 
   async findAll(dto: GetMoviesDto, userId?: number) {
